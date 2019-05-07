@@ -18,8 +18,7 @@
 #define SHM_KEY2 (key_t)ftok("./ShmKey2",'k') //obstojec direktorij
 #define SEM_KEY_NO2 (key_t)ftok("./SemKey2",'k')
 
-int main(void) 
-{
+int main(void) {
     int fdOpen, msg, bufferSize;
     int *buffer;
     int semId1, shmId1, semId2, shmId2;
@@ -28,6 +27,8 @@ int main(void)
     struct sembuf semaphore2;
     int *shmWrite2;
     int *shmRead1;
+    int ctr = 1;
+    int msgSize = 10;
 
     bufferSize = 1;
     buffer = (int *)malloc(bufferSize);
@@ -63,7 +64,7 @@ int main(void)
         printf("shmat err\n");
         exit(1);
     }
-    if ((shmRead1 = (int *)shmat(shmId1, NULL, 0)) == (int *)-1)   {
+    if ((shmRead1 = (int *)shmat(shmId1, NULL, 0)) == (int *) -1)   {
         printf("shmat err\n");
         exit(1);
     }
@@ -78,13 +79,13 @@ int main(void)
     }
 
     while(1) {
-        //write lock
+        //write lock1
         semaphore1.sem_num = SEM_READ1;
         semaphore1.sem_op = -1;
         semaphore1.sem_flg = 0;
         semop(semId1, &semaphore1, 1);
 
-        //write lock
+        //write lock2
         semaphore2.sem_num = SEM_WRITE2;
         semaphore2.sem_op = -1;
         semaphore2.sem_flg = 0;
@@ -92,17 +93,24 @@ int main(void)
 
         *shmWrite2 = *shmRead1 + 1;
 
-        //unlock read
+        //unlock read1
         semaphore1.sem_num = SEM_WRITE1;
         semaphore1.sem_op = 1;
         semaphore1.sem_flg = 0;
         semop(semId1, &semaphore1, 1);
 
-        //unlock read
+        //unlock read2
         semaphore2.sem_num = SEM_READ2;
         semaphore2.sem_op = 1;
         semaphore2.sem_flg = 0;
         semop(semId2, &semaphore2, 1);
+
+        printf("%d\n", ctr);
+        ctr++;
+
+        if (ctr > msgSize)  {
+            break;
+        }
     }
 
     if (shmctl(shmId1, IPC_RMID, 0) == -1)   {

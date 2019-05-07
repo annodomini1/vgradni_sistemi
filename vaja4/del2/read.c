@@ -14,14 +14,14 @@
 #define SHM_KEY1 (key_t)ftok(".",'k') //obstojec direktorij
 #define SEM_KEY_NO1 (key_t)ftok(".",'k')
 
-int main(void) 
-{
+int main(void) {
     int fdOpen, msg, bufferSize;
     int *buffer;
     int semId1, shmId1;
     unsigned short semArray1[2];
     struct sembuf semaphore1;
     int *shmWrite1;
+    int ctr = 1;
 
     bufferSize = 1;
     buffer = (int *)malloc(bufferSize);
@@ -69,13 +69,16 @@ int main(void)
         semop(semId1, &semaphore1, 1);
 
         *shmWrite1 = *buffer;
-        printf("%d\n", *buffer);
+        //printf("%d\n", *buffer);
 
         //unlock read
         semaphore1.sem_num = SEM_READ1;
         semaphore1.sem_op = 1;
         semaphore1.sem_flg = 0;
         semop(semId1, &semaphore1, 1);
+
+        printf("%d\n", ctr);
+        ctr++;
     }
 
     if (shmctl(shmId1, IPC_RMID, 0) == -1)   {

@@ -14,8 +14,7 @@
 #define SHM_KEY2 (key_t)ftok("./ShmKey2",'k')
 #define SEM_KEY_NO2 (key_t)ftok("./SemKey2",'k')
 
-int main(void)
-{
+int main(void)  {
     int fdOpen, msg, bufferSize;
     char *buffer;
     int semId2, shmId2;
@@ -53,7 +52,7 @@ int main(void)
         semaphore2.sem_flg = 0;
         semop(semId2, &semaphore2, 1);
 
-        printf("%d\n", *shmRead2);
+        //printf("%d\n", *shmRead2);
         write(fdOpen, shmRead2, bufferSize);
 
         //unlock write
@@ -62,11 +61,12 @@ int main(void)
         semaphore2.sem_flg = 0;
         semop(semId2, &semaphore2, 1);
 
-        // ctr++;
+        printf("%d\n", ctr);
+        ctr++;
 
-        // if (ctr > msgSize)   {
-        //     break;
-        // }
+        if (ctr > msgSize)   {
+            break;
+        }
     }
 
     if (semctl(semId2, 0, IPC_RMID, 0) == -1)    {
