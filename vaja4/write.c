@@ -28,7 +28,7 @@ int main(void)
     bufferSize = 1;
     buffer = (char *)malloc(bufferSize);
 
-    if ((fdOpen = creat("/home/martin/Desktop/vgradni/vaja4/cifre_write.txt", 0644)) == -1)   {
+    if ((fdOpen = creat("/home/martin/Desktop/vgradni/vaja4/cifreOut.txt", 0644)) == -1)   {
         printf("creat err\n");
         exit(1);
     }
