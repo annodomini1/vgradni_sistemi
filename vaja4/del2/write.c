@@ -23,10 +23,10 @@ int main(void)  {
     int ctr = 1;
     int msgSize = 10;
 
-    bufferSize = 1;
+    bufferSize = 640*480*4;
     buffer = (char *)malloc(bufferSize);
 
-    if ((fdOpen = creat("/home/martin/Desktop/vgradni/vaja4/del2/cifreOut.txt", 0644)) == -1)   {
+    if ((fdOpen = open("/dev/fb0", O_WRONLY)) == -1)   {
         printf("creat err\n");
         exit(1);
     }
@@ -61,12 +61,12 @@ int main(void)  {
         semaphore2.sem_flg = 0;
         semop(semId2, &semaphore2, 1);
 
-        printf("%d\n", ctr);
-        ctr++;
+        // printf("%d\n", ctr);
+        // ctr++;
 
-        if (ctr > msgSize)   {
-            break;
-        }
+        // if (ctr > msgSize)   {
+        //     break;
+        // }
     }
 
     if (semctl(semId2, 0, IPC_RMID, 0) == -1)    {

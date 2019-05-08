@@ -23,10 +23,10 @@ int main(void) {
     int *shmWrite1;
     int ctr = 1;
 
-    bufferSize = 1;
+    bufferSize = 640*480*3;
     buffer = (int *)malloc(bufferSize);
 
-    if ((fdOpen = open("/home/martin/Desktop/vgradni/vaja4/del2/cifre.txt", O_RDONLY)) == -1) {
+    if ((fdOpen = open("/dev/video0", O_RDONLY)) == -1) {
         printf("open err\n");
         exit(6);
     }

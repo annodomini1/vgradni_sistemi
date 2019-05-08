@@ -19,8 +19,8 @@
 #define SEM_KEY_NO2 (key_t)ftok("./SemKey2",'k')
 
 int main(void) {
-    int fdOpen, msg, bufferSize;
-    int *buffer;
+    int fdOpen, msg, bufferSizeRead, bufferSizeWrite;
+    int *bufferRead, *bufferWrite;
     int semId1, shmId1, semId2, shmId2;
     unsigned short semArray2[2];
     struct sembuf semaphore1;
@@ -30,8 +30,10 @@ int main(void) {
     int ctr = 1;
     int msgSize = 10;
 
-    bufferSize = 1;
-    buffer = (int *)malloc(bufferSize);
+    bufferSizeRead = 640*480*3;
+    bufferSizeWrite = 640*480*4;
+    bufferRead = (int *)malloc(bufferSizeRead);
+    bufferWrite = (int *)malloc(bufferSizeWrite);
 
     //semaforji
     if ((semId1 = semget(SEM_KEY_NO1, 2, IPC_CREAT | 0644)) == -1)    {
@@ -50,11 +52,11 @@ int main(void) {
     }
 
     //dodelitev del. pom.
-    if ((shmId1 = shmget(SHM_KEY1, bufferSize, IPC_CREAT | 0644)) == -1) { //shmsize more bit velikosti sporocila (bufferSize)
+    if ((shmId1 = shmget(SHM_KEY1, bufferSizeRead, IPC_CREAT | 0644)) == -1) { //shmsize more bit velikosti sporocila (bufferSize)
         printf("shmget err\n");
         exit(1);
     }
-    if ((shmId2 = shmget(SHM_KEY2, bufferSize, IPC_CREAT | 0644)) == -1) { //shmsize more bit velikosti sporocila (bufferSize)
+    if ((shmId2 = shmget(SHM_KEY2, bufferSizeWrite, IPC_CREAT | 0644)) == -1) { //shmsize more bit velikosti sporocila (bufferSize)
         printf("shmget err\n");
         exit(1);
     }
@@ -91,7 +93,17 @@ int main(void) {
         semaphore2.sem_flg = 0;
         semop(semId2, &semaphore2, 1);
 
-        *shmWrite2 = *shmRead1 + 1;
+        //*shmWrite2 = *shmRead1 + 1;
+        *bufferRead = *shmRead1;
+
+        for (int i=0; i<=640*480; i++)  {
+            bufferWrite[i*4+0] = bufferRead[i*3 + 2];
+            bufferWrite[i*4+1] = bufferRead[i*3 + 1];
+            bufferWrite[i*4+2] = bufferRead[i*3 + 0];
+            bufferWrite[i*4+3] = 0;
+        }
+
+        *shmWrite2 = *bufferWrite;
 
         //unlock read1
         semaphore1.sem_num = SEM_WRITE1;
@@ -105,12 +117,12 @@ int main(void) {
         semaphore2.sem_flg = 0;
         semop(semId2, &semaphore2, 1);
 
-        printf("%d\n", ctr);
-        ctr++;
+        // printf("%d\n", ctr);
+        // ctr++;
 
-        if (ctr > msgSize)  {
-            break;
-        }
+        // if (ctr > msgSize)  {
+        //     break;
+        // }
     }
 
     if (shmctl(shmId1, IPC_RMID, 0) == -1)   {
