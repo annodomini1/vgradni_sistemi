@@ -16,15 +16,15 @@
 
 int main(void) {
     int fdOpen, msg, bufferSize;
-    int *buffer;
+    char *buffer;
     int semId1, shmId1;
     unsigned short semArray1[2];
     struct sembuf semaphore1;
-    int *shmWrite1;
+    char *shmWrite1;
     int ctr = 1;
 
     bufferSize = 640*480*3;
-    buffer = (int *)malloc(bufferSize);
+    buffer = (char *)malloc(bufferSize);
 
     if ((fdOpen = open("/dev/video0", O_RDONLY)) == -1) {
         printf("open err\n");
@@ -47,7 +47,7 @@ int main(void) {
     }
 
     //pripni del. pom.
-    if ((shmWrite1 = (int *)shmat(shmId1, NULL, 0)) == (int *) -1)   {
+    if ((shmWrite1 = (char *)shmat(shmId1, NULL, 0)) == (void *) -1)   {
         printf("shmat err\n");
         exit(1);
     }
@@ -68,8 +68,11 @@ int main(void) {
         semaphore1.sem_flg = 0;
         semop(semId1, &semaphore1, 1);
 
-        *shmWrite1 = *buffer;
+        //shmWrite1 = buffer;
         //printf("%d\n", *buffer);
+        for (int i=0; i<=640*480*3; i++) {
+            shmWrite1[i] = buffer[i];
+        }
 
         //unlock read
         semaphore1.sem_num = SEM_READ1;

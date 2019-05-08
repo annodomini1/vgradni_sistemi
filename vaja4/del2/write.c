@@ -19,7 +19,7 @@ int main(void)  {
     char *buffer;
     int semId2, shmId2;
     struct sembuf semaphore2;
-    int *shmRead2;
+    char *shmRead2;
     int ctr = 1;
     int msgSize = 10;
 
@@ -40,7 +40,7 @@ int main(void)  {
         printf("semget err\n");
     }
 
-    if ((shmRead2 = (int *)shmat(shmId2, NULL, 0)) == (int *)-1)   {
+    if ((shmRead2 = (char *)shmat(shmId2, NULL, 0)) == (void *)-1)   {
         printf("shmat err\n");
         exit(1);
     }
@@ -53,7 +53,9 @@ int main(void)  {
         semop(semId2, &semaphore2, 1);
 
         //printf("%d\n", *shmRead2);
+        lseek(fdOpen ,0, SEEK_SET);
         write(fdOpen, shmRead2, bufferSize);
+        
 
         //unlock write
         semaphore2.sem_num = SEM_WRITE2;
@@ -61,12 +63,8 @@ int main(void)  {
         semaphore2.sem_flg = 0;
         semop(semId2, &semaphore2, 1);
 
-        // printf("%d\n", ctr);
-        // ctr++;
-
-        // if (ctr > msgSize)   {
-        //     break;
-        // }
+        printf("%d\n", ctr);
+        ctr++;
     }
 
     if (semctl(semId2, 0, IPC_RMID, 0) == -1)    {
