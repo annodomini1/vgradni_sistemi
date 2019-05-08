@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <sys/shm.h>
+#include <sys/times.h>
 
 #define SEM_READ1 0
 #define SEM_WRITE1 1
@@ -22,6 +23,11 @@ int main(void) {
     struct sembuf semaphore1;
     char *shmWrite1;
     int ctr = 1;
+    float t1, t2;
+    int ticks;
+    struct tms cpu;
+    
+    printf("ticks; %d\n", ticks=sysconf(_SC_CLK_TCK));
 
     bufferSize = 640*480*3;
     buffer = (char *)malloc(bufferSize);
@@ -60,7 +66,8 @@ int main(void) {
         printf("semctl/sem set err\n");
         exit(2);
     }
-
+    
+    t1 = times(&cpu);
     while(read(fdOpen, buffer, bufferSize) > 0) {
         //write lock
         semaphore1.sem_num = SEM_WRITE1;
@@ -82,7 +89,16 @@ int main(void) {
 
         // printf("%d\n", ctr);
         // ctr++;
+        
+        if (ctr > 1000) {
+            t2 = times(&cpu);
+            printf("ms :%f\n", (t2-t1)/100);
+            ctr = 1;
+            t1 = 0;
+        }
+        ctr++;
     }
+    
 
     if (shmctl(shmId1, IPC_RMID, 0) == -1)   {
         printf("shmctl err\n");
