@@ -1,0 +1,3 @@
+ 
+1. mkfifo
+2. raspivid -w 1280 -h 720 -t 0 -o fifo_file
