@@ -1,3 +1,5 @@
  
 1. mkfifo
 2. raspivid -w 1280 -h 720 -t 0 -o fifo_file
+
+vid_play: gst-launch-1.0 -v filesrc location=test.h264 ! h264parse ! avdec_h264 ! autovideosink sync=false

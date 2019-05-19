@@ -8,26 +8,41 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 
 #define PORT_NUMBER 55000
 
-int main( int argc, char **argv )
+int main( int argc, char **argv )//STREŽNIK - RASPBERRY
 {
   struct sockaddr_in cliAddr;
   socklen_t size;
   char      buf[128];
  
   int       initServer( char * );
-  int       sd, sn, n;
+  int       sd, sn, n, fd;
+  int buffer_size = 1280*720*3;
+  char *buffer;
 
-  if( argc != 2 ){
+  buffer = (char *)malloc(buffer_size);
+
+  if( argc != 1 ){
     printf("Uporaba: %s ime_naprave\n", argv[0]);
     exit( 1 );
   }
-  if( (sd = initServer( argv[1] )) < 0){
+
+  // vstavi ip server pc-ja
+  if( (sd = initServer( "192.168.1.100" )) < 0){
     printf("Napaka: init server\n"); exit( 1 );
   }
+
+  if ((fd = open("test.h264", O_RDONLY))  < 0){ //tuki boš dal ime fifota  + read-write
+    printf("napaka open\n");
+    exit(1);
+  }
+
+  printf("fd: %d\n", fd);
   
   listen( sd, 5 );
   alarm( 60 ); /* koncaj po eni minuti */
@@ -42,13 +57,13 @@ int main( int argc, char **argv )
     /* zveza je vzpostavljena, ustvari strezni proces */
     if( fork() == 0 ){
       printf("odjemalec: %s:%d\n", inet_ntoa( cliAddr.sin_addr ), ntohs( cliAddr.sin_port ) );
-      while( (n = read( sn, buf, sizeof( buf ))) > 0 ){
-	memcpy(buf,"s-> ",4);
-        if( write(sn, buf, n) == -1)
+      while( (n = read( fd, buffer, buffer_size)) > 0 ){
+        if( write(sn, buffer, n) == -1)
           perror("write err");
       }
       printf("odjemalec: %s:%d je prekinil povezavo\n", inet_ntoa( cliAddr.sin_addr ), ntohs( cliAddr.sin_port ));
       close( sn );
+
       exit( 0 );
     }
   }
